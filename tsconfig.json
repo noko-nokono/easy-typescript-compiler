@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "noImplicitReturns": false,
+        "target": "esnext",
+        "lib": ["es2020", "dom"],
+        "outDir": "build",
+        "sourceMap": true,
+    },
+    "include": [
+        "src"
+    ]
+}
