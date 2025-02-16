@@ -1,4 +1,8 @@
 {
+	"scripts": {
+		"build": "tsc ./src/compile.ts --outDir dist",
+		"start": "node ./dist/compile.js"
+	},
 	"dependencies": {
 		"typescript": "^5.7.3"
 	}

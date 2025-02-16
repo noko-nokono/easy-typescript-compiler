@@ -1,6 +1,7 @@
 import { Token } from "./type";
 
 export type Scanner = {
+  scan(): void
   position: number
   text: string
   token: Token
@@ -13,7 +14,7 @@ const keywords = {
   "return": Token.Return,
 }
 
-const scanner = (code: string): Scanner => {
+export const scanner = (code: string): Scanner => {
   // コードのどの位置を解析しているかを判別する値
   let position = 0;
   // 解析したコードのテキストを格納する値（変数名や文字列など）
@@ -22,15 +23,17 @@ const scanner = (code: string): Scanner => {
   let token = Token.BOF;
 
   // 解析している位置が、コードの長さを超えていないか（最後まで到達していないか）を判別
-  // 解析している位置が、引数で受けた解析をする上でスキップすべき文字列配列かを判別
+  // 解析している位置が、引数で受けた解析をする関数の条件に一致しているかを判別
   // 判別した結果、スキップすべき文字列配列に含まれている場合、解析している位置を進める
-  function scanForward(isSkip: boolean) {
-    while (position < code.length && isSkip) position++;
-  };
+  function scanForward(pred: (charactor: string) => boolean) {
+    while (position < code.length && pred(code.charAt(position))) {
+      position++;
+    }
+  }
 
   function scan() {
     // 現在解析している位置が、空白・タブ・バックスペース・改行かどうかを判別する
-    scanForward(/[ \t\b\n]/.test(code.charAt(position)))
+    scanForward(isIgnorableCharacter)
     const start = position
 
     // 現在解析している位置が、最後かどうかを判別
@@ -41,7 +44,7 @@ const scanner = (code: string): Scanner => {
     // ダブルオーテーションで囲まれた値を文字列として判定
     else if (code.charAt(position) === '"') {
       position++
-      scanForward(/[^\"]/.test(code.charAt(position)))
+      scanForward(isDoubleQuotation)
 
       // ダブルくオーテーションが閉じられているかを判別
       if (code.charAt(position) !== '"') {
@@ -57,7 +60,7 @@ const scanner = (code: string): Scanner => {
     }
     // 現在解析している位置が、数値かどうかを判別
     else if (/[0-9]/.test(code.charAt(position))) {
-      scanForward(/[0-9]/.test(code.charAt(position)))
+      scanForward(isNumber)
 
       // 数値の値を取得
       text = code.slice(start, position)
@@ -65,7 +68,7 @@ const scanner = (code: string): Scanner => {
     }
     // 現在解析している位置が、英数字またはアンダーバーかどうかを判別
     else if (/[_a-zA-Z]/.test(code.charAt(position))) {
-      scanForward(/[_a-zA-Z]/.test(code.charAt(position)))
+      scanForward(isAlphaNumeral)
 
       // 識別子の値を取得
       text = code.slice(start, position)
@@ -97,11 +100,30 @@ const scanner = (code: string): Scanner => {
     }
   };
 
-  scan();
-
   return {
+    scan,
     position,
     text,
     token,
   }
 };
+
+// 現在解析している位置が、空白・タブ・バックスペース・改行かどうかを判別する関数
+const isIgnorableCharacter = (charactor: string): boolean => {
+  return /[ \t\b\n]/.test(charactor);
+}
+
+// 現在解析している位置が、ダブルオーテーションかどうかを判別する関数
+const isDoubleQuotation = (charactor: string): boolean => {
+  return /[^\"]/.test(charactor)
+}
+
+// 現在解析している位置が、数値かどうかを判別する関数
+const isNumber = (charactor: string): boolean => {
+  return /[0-9]/.test(charactor);
+}
+
+// 現在解析している位置が、英数字またはアンダーバーかどうかを判別
+const isAlphaNumeral = (charactor: string): boolean => {
+  return /[_a-zA-Z]/.test(charactor);
+}
