@@ -1,4 +1,4 @@
-import { scanner } from "./compiler/scanner";
+import { scanner } from "./compiler/scanner/index";
 
 const compile = (code: string) => {
   const _scanner = scanner(code);

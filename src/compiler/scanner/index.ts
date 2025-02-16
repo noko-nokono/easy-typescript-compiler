@@ -1,11 +1,4 @@
-import { Token } from "./type";
-
-export type Scanner = {
-  scan(): void
-  position: number
-  text: string
-  token: Token
-}
+import { Token, Scanner } from "./type";
 
 const keywords = {
   "function": Token.Function,
@@ -100,11 +93,14 @@ export const scanner = (code: string): Scanner => {
     }
   };
 
+  // position, text, tokenを関数で返す理由は以下の点があるため
+  // 1. 最新の値をリアルタイムに取得するため
+  // 2. 外部から値を変更されないようにするため
   return {
     scan,
-    position,
-    text,
-    token,
+    position: () => position,
+    text: () => text,
+    token: () => token,
   }
 };
 

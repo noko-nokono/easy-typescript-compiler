@@ -1,3 +1,4 @@
+// 解析している値を識別するためのトークンの種類を管理
 export enum Token {
   Function,         // 関数
   Var,              // 変数
@@ -22,4 +23,12 @@ export enum Token {
   Unknown,          // 不明
   BOF,              // 開始
   EOF,              // 終了
+}
+
+// scannerで返される各種値の型
+export type Scanner = {
+  scan(): void
+  position: () => number
+  text: () => string
+  token: () => Token
 }
