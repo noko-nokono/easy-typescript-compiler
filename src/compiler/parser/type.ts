@@ -1,22 +1,22 @@
 export enum SyntaxKind {
-  Module,
-  Identifier,
-  NumericLiteral,
-  StringLiteral,
-  Assignment,
-  ExpressionStatement,
-  Var,
-  TypeAlias,
-  Object,
-  PropertyAssignment,
-  ObjectLiteralType,
-  PropertyDeclaration,
-  Function,
-  Signature,
-  Parameter,
-  TypeParameter,
-  Return,
-  Call,
+  Module,                // モジュール
+  Identifier,            // 識別子
+  NumericLiteral,        // 数値
+  StringLiteral,         // 文字列
+  Assignment,            // 代入
+  ExpressionStatement,   // 式文
+  Var,                   // 変数
+  TypeAlias,             // 型エイリアス
+  Object,                // オブジェクト
+  PropertyAssignment,    // プロパティ代入
+  ObjectLiteralType,     // オブジェクトリテラル型
+  PropertyDeclaration,   // プロパティ宣言
+  Function,              // 関数
+  Signature,             // シグネチャ
+  Parameter,             // 引数（パラメータ）
+  TypeParameter,         // 型パラメータ
+  Return,                // 戻り値
+  Call,                  // 関数呼び出し
 }
 export type Error = {
   pos: number
