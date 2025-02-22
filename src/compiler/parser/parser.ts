@@ -16,7 +16,7 @@ import { error } from '../error'
  *    - 識別子（変数名など）や リテラル（数値や文字列）を解析する
  *    - 代入式 (x = 10) を解析する
  */
-export const parser = (scanner: Scanner) => {
+export const parser = (scanner: Scanner): Module => {
   // 解析を開始する
   scanner.scan()
 
@@ -32,6 +32,7 @@ export const parser = (scanner: Scanner) => {
   // コードの文を構成する要素の解析する関数（var, Type, return）
   function parseStatement(): Statement {
     const pos = scanner.position()
+    // 現在の解析位置からどのように解析を行うかを判別する
     switch (scanner.token()) {
       // 変数宣言を解析する（var）
       case Token.Var: {
@@ -55,19 +56,23 @@ export const parser = (scanner: Scanner) => {
         scanner.scan()
         return { kind: SyntaxKind.Return, expression: parseExpression(), pos, parent: undefined! }
       }
+      // その他、オブジェクト・関数・識別子・リテラル（文字列・数値）などを解析する
       default:
         return { kind: SyntaxKind.ExpressionStatement, expression: parseExpression(), pos, parent: undefined! }
     }
   }
 
-  // コードの式の識別を行い、関数の呼び出しを解析する関数
+  // オブジェクト・関数・識別子・リテラル（文字列・数値）を解析し、加えて関数呼び出しを解析する関数
   function parseExpression(): Expression {
+    // オブジェクト・関数・識別子・リテラル（文字列・数値）を開始する
     const expression = parseExpressionBelowCall()
-    // 通常の関数呼び出しを解析する
+
+    // 通常の関数呼び出しを解析する（関数を実行している箇所を指す）
+    // 例）add(1, 2);
     if (tryParseToken(Token.OpenParen)) {
       return { kind: SyntaxKind.Call, expression, arguments: parseTerminated(parseExpression, Token.Comma, Token.CloseParen), pos: expression.pos, parent: undefined! }
     }
-    // ジェネリック型の関数呼び出しを解析する
+    // ジェネリック型の関数呼び出しを解析する（関数を実行している箇所を指す）
     else if (tryParseToken(Token.LessThan)) {
       const typeArguments = parseTerminated(parseType, Token.Comma, Token.GreaterThan)
       parseExpected(Token.OpenParen)
@@ -79,8 +84,9 @@ export const parser = (scanner: Scanner) => {
   // オブジェクト・関数・識別子・リテラル（文字列・数値）の判別を行う関数
   function parseExpressionBelowCall(): Expression {
     const pos = scanner.position()
+
     // オブジェクトの開始位置である "{" の値があることを確認
-    // 例）const obj = { x: 1, y: 2 };
+    // 例）var obj = { x: 1, y: 2 };
     if (tryParseToken(Token.OpenBrace)) {
       const object = {
           kind: SyntaxKind.Object,
@@ -129,8 +135,8 @@ export const parser = (scanner: Scanner) => {
   }
 
   // 識別子（Identifier）を解析する関数
-  // 例）const str = "hello";
-  // 例）const num = 100;
+  // 例）var str = "hello";
+  // 例）var num = 100;
   function parseIdentifier(): Identifier {
     const e = parseIdentifierOrLiteral()
     if (e.kind === SyntaxKind.Identifier) {
@@ -193,7 +199,7 @@ export const parser = (scanner: Scanner) => {
   }
 
   // オブジェクトの中身の型を解析する関数
-  // const test = { hoge: "fuga" } というオブジェクトの場合、hoge: string として解析する
+  // var test = { hoge: "fuga" } というオブジェクトの場合、hoge: string として解析する
   function parsePropertyDeclaration(): PropertyDeclaration {
     // オブジェクトのプロパティ名を解析
     const name = parseIdentifierOrLiteral()
@@ -258,6 +264,8 @@ export const parser = (scanner: Scanner) => {
       return signature
     }
   }
+
+  //  -------------------------- 以下解析のためのutility関数 --------------------------
 
   // 引数で受け取った値（トークン）と、現在解析しているトークンが一致している時、その値（トークン）をスキップする関数
   function tryParseToken(expected: Token) {
