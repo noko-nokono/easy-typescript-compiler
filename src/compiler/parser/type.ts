@@ -97,7 +97,7 @@ export type TypeAlias = Location & DeclarationBase & {
   name: Identifier
   typename: TypeNode
 }
-// 関数の実行などを表す型（例: foo()）
+// 式（Expression）を実行する文（例: console.log("Hello")）
 export type ExpressionStatement = Location & {
   kind: SyntaxKind.ExpressionStatement
   expression: Expression
@@ -108,11 +108,23 @@ export type Return = Location & {
   expression: Expression
 }
 
-// オブジェクトの型定義を表す型（例: { a: number, b: string }）
+// オブジェクトの型定義を表す型（例: type hoge = { a: number, b: string }）
 export type ObjectLiteralType = Location & DeclarationBase & {
   kind: SyntaxKind.ObjectLiteralType
   properties: PropertyDeclaration[]
   symbol: ObjectSymbol
+}
+// オブジェクトのプロパティ代入を表す型（例: { name: "John" }）
+export type PropertyAssignment = Location & DeclarationBase & {
+  kind: SyntaxKind.PropertyAssignment
+  name: Identifier
+  initializer: Expression
+}
+// オブジェクトのプロパティを表す型（例: name: string）
+export type PropertyDeclaration = Location & DeclarationBase & {
+  kind: SyntaxKind.PropertyDeclaration
+  name: Identifier
+  typename?: TypeNode
 }
 // 関数の型定義を表す型（例: (x: number) => string）
 export type SignatureDeclaration = Location & DeclarationBase & {
@@ -134,25 +146,14 @@ export type TypeParameter = Location & DeclarationBase & {
   name: Identifier
 }
 
-// オブジェクトのプロパティ代入を表す型（例: { name: "John" }）
-export type PropertyAssignment = Location & DeclarationBase & {
-  kind: SyntaxKind.PropertyAssignment
-  name: Identifier
-  initializer: Expression
-}
-// オブジェクトのプロパティを表す型
-export type PropertyDeclaration = Location & DeclarationBase & {
-  kind: SyntaxKind.PropertyDeclaration
-  name: Identifier
-  typename?: TypeNode
-}
+// 関数の実行を表す型（例: foo()）
 export type Call = Location & {
   kind: SyntaxKind.Call
   expression: Expression
   typeArguments?: TypeNode[]
   arguments: Expression[]
 }
-
+// 
 export type Symbol = {
   valueDeclaration: Declaration | undefined
   declarations: Declaration[]
