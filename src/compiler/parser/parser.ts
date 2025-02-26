@@ -6,9 +6,9 @@ import { error } from '../error'
 /**
  * [全体像]
  * 1. parseModuleでプログラム全体を解析を開始する
- * 2. parseStatementでプログラムの各文を解析する（var, Type, return）
+ * 2. parseStatementでプログラムの各文を解析する（var, type, return）
  *    - var: 変数宣言を解析する
- *    - Type: 型宣言を解析する
+ *    - type: 型宣言を解析する
  *    - return: return文を解析する
  * 3. parseExpressionでプログラムの式を解析する（object, function, etc...）
  *    - オブジェクトリテラル ({ key: value }) を解析する
@@ -43,7 +43,7 @@ export const parser = (scanner: Scanner): Module => {
         const initializer = parseExpression()
         return { kind: SyntaxKind.Var, name, typename, initializer, pos, symbol: undefined!, parent: undefined! }
       }
-      // 型宣言を解析する（Type）
+      // 型宣言を解析する（type）
       case Token.Type: {
         scanner.scan()
         const name = parseIdentifier()

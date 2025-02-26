@@ -97,7 +97,7 @@ export type TypeAlias = Location & DeclarationBase & {
   name: Identifier
   typename: TypeNode
 }
-// 式（Expression）を実行する文（例: console.log("Hello")）
+// 式を実行する文（例: console.log("Hello")）
 export type ExpressionStatement = Location & {
   kind: SyntaxKind.ExpressionStatement
   expression: Expression
@@ -153,32 +153,41 @@ export type Call = Location & {
   typeArguments?: TypeNode[]
   arguments: Expression[]
 }
-// 
+// 識別子の情報を管理する型
 export type Symbol = {
+  // 変数や関数の定義元
   valueDeclaration: Declaration | undefined
+  // この値が関係する宣言のリスト
   declarations: Declaration[]
   valueType?: Type
   typeType?: Type
 }
-// TODO: SymbolFlags to distinguish Object and Instantiated symbols
+// Symbol型のオブジェクトを表す型
 export type ObjectSymbol = Symbol & {
   members: Table
 }
+// Symbol型のジェネリック型を具体的な型に変換したシンボル
 export type InstantiatedSymbol = Symbol & {
   target: Symbol
   mapper: Mapper
 }
+// 値（変数・関数）なのか型（インターフェース・型エイリアス）なのかを区別するための列挙型
 export enum Meaning {
   Value,
   Type,
 }
+// 
 export type Table = Map<string, Symbol>
+// ファイル単位（モジュール）の情報を表す型
+// parserで返されるASTのルートノード
 export type Module = Location & {
   kind: SyntaxKind.Module
   locals: Table
   statements: Statement[]
 }
+// idで型を識別する型
 export type SimpleType = { id: number }
+// 
 export type PrimitiveType = SimpleType & {
   kind: Kind.Primitive
 }
