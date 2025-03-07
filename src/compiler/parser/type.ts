@@ -46,6 +46,9 @@ export type DeclarationBase = {
 export type Container = Module | Function
 export type Node = Expression | Statement | Declaration | Module | TypeNode
 
+// ------------------------------------------------------------
+// 以下、コードの要素を表す型
+
 // 変数名や関数名などの識別子を表す型
 export type Identifier = Location & {
   kind: SyntaxKind.Identifier
@@ -80,9 +83,12 @@ export type Function = Location & DeclarationBase & {
   typeParameters?: TypeParameter[]
   parameters: Parameter[]
   typename?: TypeNode
-  body: Statement[] // TODO: Maybe needs to be Block
+  body: Statement[]
   locals: Table
 }
+
+// ------------------------------------------------------------
+// 以下、宣言を表す型
 
 // 変数宣言を表す型（例: var x = 10）
 export type Var = Location & DeclarationBase & {
@@ -107,6 +113,9 @@ export type Return = Location & {
   kind: SyntaxKind.Return
   expression: Expression
 }
+
+// ------------------------------------------------------------
+// 以下、型定義を表す型
 
 // オブジェクトの型定義を表す型（例: type hoge = { a: number, b: string }）
 export type ObjectLiteralType = Location & DeclarationBase & {
@@ -134,6 +143,10 @@ export type SignatureDeclaration = Location & DeclarationBase & {
   typename: TypeNode
   locals: Table
 }
+
+// ------------------------------------------------------------
+// 以下、関数の引数や戻り値を表す型
+
 // 関数の引数の型を表す型（例: (a: number)）
 export type Parameter = Location & DeclarationBase & {
   kind: SyntaxKind.Parameter
@@ -153,6 +166,9 @@ export type Call = Location & {
   typeArguments?: TypeNode[]
   arguments: Expression[]
 }
+
+// ------------------------------------------------------------
+
 // 識別子の情報を管理する型
 export type Symbol = {
   // 変数や関数の定義元

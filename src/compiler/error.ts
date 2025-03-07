@@ -1,4 +1,4 @@
-import { Node, Error } from './parser/type';
+import { Node, Error } from './parser/type.js';
 
 export const errors: Map<number,Error> = new Map()
 export function error(location: Node | number, message: string) {

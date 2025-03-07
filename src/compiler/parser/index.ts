@@ -1,7 +1,7 @@
-import { Token } from "../scanner/type";
-import type { Scanner } from "../scanner/type";
-import { SyntaxKind, Statement, Identifier, Expression, Module, PropertyAssignment, PropertyDeclaration, Object, ObjectLiteralType, Parameter, TypeNode, SignatureDeclaration, TypeParameter, Function } from './type'
-import { error } from '../error'
+import { Token } from "../scanner/type.js";
+import type { Scanner } from "../scanner/type.js";
+import { SyntaxKind, Statement, Identifier, Expression, Module, PropertyAssignment, PropertyDeclaration, Object, ObjectLiteralType, Parameter, TypeNode, SignatureDeclaration, TypeParameter, Function } from './type.js'
+import { error } from '../error.js'
 
 /**
  * [全体像]

@@ -1,4 +1,4 @@
-import { Token, Scanner } from "./type";
+import { Token, Scanner } from "./type.js";
 
 const keywords = {
   "function": Token.Function,
