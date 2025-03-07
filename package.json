@@ -1,6 +1,7 @@
 {
+	"type": "module",
 	"scripts": {
-		"build": "tsc ./src/compile.ts --outDir dist",
+		"build": "tsc",
 		"start": "node ./dist/compile.js"
 	},
 	"dependencies": {

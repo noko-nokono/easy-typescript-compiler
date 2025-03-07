@@ -1,20 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.scanner = void 0;
-var type_1 = require("./type");
-var keywords = {
-    "function": type_1.Token.Function,
-    "var": type_1.Token.Var,
-    "type": type_1.Token.Type,
-    "return": type_1.Token.Return,
+import { Token } from "./type.js";
+const keywords = {
+    "function": Token.Function,
+    "var": Token.Var,
+    "type": Token.Type,
+    "return": Token.Return,
 };
-var scanner = function (code) {
+export const scanner = (code) => {
     // コードのどの位置を解析しているかを判別する値
-    var position = 0;
+    let position = 0;
     // 解析したコードのテキストを格納する値（変数名や文字列など）
-    var text = "";
+    let text = "";
     // 解析したトークンを格納する値
-    var token = type_1.Token.BOF;
+    let token = Token.BOF;
     // 解析している位置が、コードの長さを超えていないか（最後まで到達していないか）を判別
     // 解析している位置が、引数で受けた解析をする関数の条件に一致しているかを判別
     // 判別した結果、スキップすべき文字列配列に含まれている場合、解析している位置を進める
@@ -26,10 +23,10 @@ var scanner = function (code) {
     function scan() {
         // 現在解析している位置が、空白・タブ・バックスペース・改行かどうかを判別する
         scanForward(isIgnorableCharacter);
-        var start = position;
+        const start = position;
         // 現在解析している位置が、最後かどうかを判別
         if (position === code.length) {
-            token = type_1.Token.EOF;
+            token = Token.EOF;
         }
         // 現在解析している位置が、ダブルオーテーションかどうかを判別
         // ダブルオーテーションで囲まれた値を文字列として判定
@@ -45,21 +42,21 @@ var scanner = function (code) {
             }
             // ダブルオーテーションで囲まれた文字列を取得
             text = code.slice(start, position);
-            token = type_1.Token.StringLiteral;
+            token = Token.StringLiteral;
         }
         // 現在解析している位置が、数値かどうかを判別
         else if (/[0-9]/.test(code.charAt(position))) {
             scanForward(isNumber);
             // 数値の値を取得
             text = code.slice(start, position);
-            token = type_1.Token.NumericLiteral;
+            token = Token.NumericLiteral;
         }
         // 現在解析している位置が、英数字またはアンダーバーかどうかを判別
         else if (/[_a-zA-Z]/.test(code.charAt(position))) {
             scanForward(isAlphaNumeral);
             // 識別子の値を取得
             text = code.slice(start, position);
-            token = text in keywords ? keywords[text] : type_1.Token.Identifier;
+            token = text in keywords ? keywords[text] : Token.Identifier;
         }
         // 現在解析している位置が、ここまでの条件に当てはまらない値の場合
         else {
@@ -69,66 +66,69 @@ var scanner = function (code) {
                     // イコールの後に続く文字がアローかどうかを判別
                     if (code.charAt(position) === '>') {
                         position++;
-                        token = type_1.Token.Arrow;
+                        token = Token.Arrow;
                         break;
                     }
-                    token = type_1.Token.Equals;
+                    token = Token.Equals;
                     break;
                 case ',':
-                    token = type_1.Token.Comma;
+                    token = Token.Comma;
                     break;
                 case ';':
-                    token = type_1.Token.Semicolon;
+                    token = Token.Semicolon;
                     break;
                 case ":":
-                    token = type_1.Token.Colon;
+                    token = Token.Colon;
                     break;
                 case "{":
-                    token = type_1.Token.OpenBrace;
+                    token = Token.OpenBrace;
                     break;
                 case "}":
-                    token = type_1.Token.CloseBrace;
+                    token = Token.CloseBrace;
                     break;
                 case "(":
-                    token = type_1.Token.OpenParen;
+                    token = Token.OpenParen;
                     break;
                 case ")":
-                    token = type_1.Token.CloseParen;
+                    token = Token.CloseParen;
                     break;
                 case "<":
-                    token = type_1.Token.LessThan;
+                    token = Token.LessThan;
                     break;
                 case ">":
-                    token = type_1.Token.GreaterThan;
+                    token = Token.GreaterThan;
                     break;
                 default:
-                    token = type_1.Token.Unknown;
+                    token = Token.Unknown;
                     break;
             }
         }
     }
     ;
+    // position, text, tokenを関数で返す理由は以下の点があるため
+    // 1. 最新の値をリアルタイムに取得するため
+    // 2. 外部から値を変更されないようにするため
     return {
-        scan: scan,
-        position: position,
-        text: text,
-        token: token,
+        scan,
+        position: () => position,
+        text: () => text,
+        token: () => token,
     };
 };
-exports.scanner = scanner;
 // 現在解析している位置が、空白・タブ・バックスペース・改行かどうかを判別する関数
-var isIgnorableCharacter = function (charactor) {
+const isIgnorableCharacter = (charactor) => {
     return /[ \t\b\n]/.test(charactor);
 };
 // 現在解析している位置が、ダブルオーテーションかどうかを判別する関数
-var isDoubleQuotation = function (charactor) {
+const isDoubleQuotation = (charactor) => {
     return /[^\"]/.test(charactor);
 };
 // 現在解析している位置が、数値かどうかを判別する関数
-var isNumber = function (charactor) {
+const isNumber = (charactor) => {
     return /[0-9]/.test(charactor);
 };
 // 現在解析している位置が、英数字またはアンダーバーかどうかを判別
-var isAlphaNumeral = function (charactor) {
+const isAlphaNumeral = (charactor) => {
     return /[_a-zA-Z]/.test(charactor);
 };
+//# sourceMappingURL=index.js.map

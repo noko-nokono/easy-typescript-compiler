@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Token = void 0;
-var Token;
+// 解析している値を識別するためのトークンの種類を管理
+export var Token;
 (function (Token) {
     Token[Token["Function"] = 0] = "Function";
     Token[Token["Var"] = 1] = "Var";
@@ -26,4 +24,5 @@ var Token;
     Token[Token["Unknown"] = 20] = "Unknown";
     Token[Token["BOF"] = 21] = "BOF";
     Token[Token["EOF"] = 22] = "EOF";
-})(Token || (exports.Token = Token = {}));
+})(Token || (Token = {}));
+//# sourceMappingURL=type.js.map
