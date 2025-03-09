@@ -187,11 +187,6 @@ export type InstantiatedSymbol = Symbol & {
   target: Symbol
   mapper: Mapper
 }
-// 値（変数・関数）なのか型（インターフェース・型エイリアス）なのかを区別するための列挙型
-export enum Meaning {
-  Value,
-  Type,
-}
 // 
 export type Table = Map<string, Symbol>
 // ファイル単位（モジュール）の情報を表す型
