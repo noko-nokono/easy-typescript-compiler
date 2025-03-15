@@ -187,7 +187,7 @@ export type InstantiatedSymbol = Symbol & {
   target: Symbol
   mapper: Mapper
 }
-// 
+// シンボルを管理するためのマップの型
 export type Table = Map<string, Symbol>
 // ファイル単位（モジュール）の情報を表す型
 // parserで返されるASTのルートノード
