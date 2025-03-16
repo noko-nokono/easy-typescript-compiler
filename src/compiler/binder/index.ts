@@ -1,19 +1,29 @@
-import { Expression, Module, Node, Location, SyntaxKind, Statement, TypeNode, Table, Declaration } from '../parser/type.js'
-import { Meaning } from './type.js'
+import { Expression, Module, Node, Location, SyntaxKind, Statement, TypeNode, Table, Declaration, Meaning } from '../parser/type.js'
 import { error } from '../error.js'
-
-// ------------------- Symbol（シンボル）の説明 -------------------
-// コンパイラの型解析で使われる「識別子（名前）」の情報を管理するオブジェクト
-// 具体的には、変数、関数、クラス、型エイリアスなどの宣言情報を保持する 役割を持っています
-// Binder で重要な Table 型はシンボルを管理するためのマップの役割を持っています
-// -------------------------------------------------------------
 
 // 宣言に関する値を管理する値
 export const valueDeclarations = new Set([SyntaxKind.Var, SyntaxKind.Object, SyntaxKind.PropertyAssignment, SyntaxKind.PropertyDeclaration, SyntaxKind.Parameter])
 // 型エイリアスの宣言を管理する値
 export const typeDeclarations = new Set([SyntaxKind.TypeAlias])
 
-export function bind(m: Module) {
+/**
+ * [全体像]
+ * 1. bind関数でプログラム全体の解析を開始する
+ * 2. bindStatementでプログラムの各文を解析する（var, type, return, expression（式））
+ *    - var: 変数宣言の解析
+ *    - type: 型定義の解析
+ *    - return: return文の解析
+ *    - expression: 式文の解析
+ * 3. bindExpressionでプログラムの各式を解析する（object, function, assignment, call, identifier, string, number）
+ *    - object: オブジェクトの解析
+ *    - function: 関数の解析
+ *    - assignment: 代入の解析
+ *    - call: 関数呼び出しの解析
+ *    - identifier: 識別子の解析
+ *    - string: 文字列の解析
+ *    - number: 数値の解析
+ */
+export function binder(m: Module) {
   setParents(m, m.statements)
   for (const statement of m.statements) {
     bindStatement(m.locals, statement)

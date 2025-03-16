@@ -3,7 +3,7 @@ import { SyntaxKind } from './type.js';
 import { error } from '../error.js';
 /**
  * [全体像]
- * 1. parseModuleでプログラム全体を解析を開始する
+ * 1. parseModuleでプログラム全体の解析を開始する
  * 2. parseStatementでプログラムの各文を解析する（var, type, return）
  *    - var: 変数宣言を解析する
  *    - type: 型宣言を解析する

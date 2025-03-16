@@ -167,6 +167,21 @@ export type Call = Location & {
   arguments: Expression[]
 }
 
+// 関数の型を表し、関数シグネチャを持っています
+export type FunctionType = SimpleType & {
+  kind: Kind.Function
+  signature: Signature
+}
+
+// 関数シグネチャを表し、型パラメータや戻り値、引数情報を保持します
+export type Signature = {
+  typeParameters?: Symbol[]
+  target?: Signature
+  mapper?: Mapper
+  parameters: Symbol[]
+  returnType: Type
+}
+
 // ------------------------------------------------------------
 
 // 識別子の情報を管理する型
@@ -198,36 +213,34 @@ export type Module = Location & {
 }
 // idで型を識別する型
 export type SimpleType = { id: number }
-// 
+// プリミティブ型 (string, number, boolean, undefined など) を表します。
 export type PrimitiveType = SimpleType & {
   kind: Kind.Primitive
 }
+// 型の種類を表す型
+// プリミティブ型、オブジェクト型、関数型、型変数の4つの種類がある
 export enum Kind {
   Primitive,
   Object,
   Function,
   TypeVariable,
 }
-// TODO: Having separate Object/Function types is way easier, but it's NOT like TS does it, because JS allows properties and signatures on the same objects.
+// オブジェクト型を表し、プロパティやメソッドを保持する
 export type ObjectType = SimpleType & {
   kind: Kind.Object
   members: Table
 }
-export type FunctionType = SimpleType & {
-  kind: Kind.Function
-  signature: Signature
-}
+// ジェネリック型などの型変数を表します
 export type TypeVariable = SimpleType & {
-  name: string // it's nominal babyyyyyyyyyyy (TODO: Not needed in Typescript because types optionally have a symbol)
+  name: string
   kind: Kind.TypeVariable
 }
-export type Signature = {
-  typeParameters?: Symbol[]
-  target?: Signature
-  mapper?: Mapper
-  // TODO: Maybe need instantiations?: Map<string, Signature> too? It's technically caching I think, and I'm not doing that yet
-  parameters: Symbol[]
-  returnType: Type
+// 値（変数・関数）なのか型（インターフェース・型エイリアス）なのかを区別するための列挙型
+export enum Meaning {
+  Value,
+  Type,
 }
+// 型システムのコアであり、すべての型を表す型
 export type Type = PrimitiveType | ObjectType | FunctionType | TypeVariable
+// ジェネリック型の型引数を変換するためのマッピング型
 export type Mapper = { sources: TypeVariable[], targets: Type[] }

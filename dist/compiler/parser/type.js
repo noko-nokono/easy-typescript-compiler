@@ -19,12 +19,8 @@ export var SyntaxKind;
     SyntaxKind[SyntaxKind["Return"] = 16] = "Return";
     SyntaxKind[SyntaxKind["Call"] = 17] = "Call";
 })(SyntaxKind || (SyntaxKind = {}));
-// 値（変数・関数）なのか型（インターフェース・型エイリアス）なのかを区別するための列挙型
-export var Meaning;
-(function (Meaning) {
-    Meaning[Meaning["Value"] = 0] = "Value";
-    Meaning[Meaning["Type"] = 1] = "Type";
-})(Meaning || (Meaning = {}));
+// 型の種類を表す型
+// プリミティブ型、オブジェクト型、関数型、型変数の4つの種類がある
 export var Kind;
 (function (Kind) {
     Kind[Kind["Primitive"] = 0] = "Primitive";
@@ -32,4 +28,10 @@ export var Kind;
     Kind[Kind["Function"] = 2] = "Function";
     Kind[Kind["TypeVariable"] = 3] = "TypeVariable";
 })(Kind || (Kind = {}));
+// 値（変数・関数）なのか型（インターフェース・型エイリアス）なのかを区別するための列挙型
+export var Meaning;
+(function (Meaning) {
+    Meaning[Meaning["Value"] = 0] = "Value";
+    Meaning[Meaning["Type"] = 1] = "Type";
+})(Meaning || (Meaning = {}));
 //# sourceMappingURL=type.js.map
