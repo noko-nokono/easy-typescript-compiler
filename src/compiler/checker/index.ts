@@ -10,10 +10,13 @@ const anyType: Type = { kind: Kind.Primitive, id: typeCount++ }
 export function check(module: Module) {
   return module.statements.map(checkStatement)
 
+  // プログラムの実行単位（アクションや宣言）を表す要素を引数に受け取り、型のチェックを行う関数
   function checkStatement(statement: Statement): Type {
     switch (statement.kind) {
+      // 式文の場合
       case SyntaxKind.ExpressionStatement:
         return checkExpression(statement.expression)
+      // 変数宣言の場合
       case SyntaxKind.Var:
         const i = checkExpression(statement.initializer)
         if (!statement.typename) {
@@ -23,12 +26,15 @@ export function check(module: Module) {
         if (!isAssignableTo(i, t))
           error(statement.initializer, `Cannot assign initialiser of type '${typeToString(i)}' to variable with declared type '${typeToString(t)}'.`)
         return t
+      // 型エイリアスの場合
       case SyntaxKind.TypeAlias:
         return checkType(statement.typename)
+      // return文の場合
       case SyntaxKind.Return:
         return checkExpression(statement.expression)
     }
   }
+
   function checkExpression(expression: Expression): Type {
     switch (expression.kind) {
       case SyntaxKind.Identifier:
