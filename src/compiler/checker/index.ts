@@ -35,6 +35,7 @@ export function check(module: Module) {
     }
   }
 
+  // 
   function checkExpression(expression: Expression): Type {
     switch (expression.kind) {
       case SyntaxKind.Identifier:
@@ -62,6 +63,8 @@ export function check(module: Module) {
         return checkCall(expression)
     }
   }
+  
+  // 
   function checkObject(object: Object): ObjectType {
     const members: Table = new Map()
     for (const p of object.properties) {
@@ -75,12 +78,18 @@ export function check(module: Module) {
     // No caching here because Typescript doesn't cache object types either 
     return { kind: Kind.Object, id: typeCount++, members }
   }
+  
+  // 
   function checkProperty(property: PropertyAssignment): Type {
     return checkExpression(property.initializer)
   }
+  
+  // 
   function checkFunction(func: Function): Type {
     return getValueTypeOfSymbol(func.symbol)
   }
+
+  // 
   function checkCall(call: Call): Type {
     // TODO: after instantiation is done, check how Typescript does it.
     const expressionType = checkExpression(call.expression)
@@ -117,6 +126,8 @@ export function check(module: Module) {
     }
     return sig.returnType
   }
+
+  // 
   function instantiateSignature(signature: Signature, mapper: Mapper): Signature {
     return {
       typeParameters: undefined, // TODO: Optionally retain type parameters
@@ -126,6 +137,8 @@ export function check(module: Module) {
       mapper,
     }
   }
+
+  // 
   function instantiateType(type: Type, mapper: Mapper): Type {
     // TODO: Caching??!
     switch (type.kind) {
