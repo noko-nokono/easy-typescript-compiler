@@ -163,6 +163,8 @@ export function check(module: Module) {
         throw new Error("Unexpected type kind " + Kind[(type as Type).kind])
     }
   }
+
+  // 
   function instantiateSymbol(symbol: Symbol, mapper: Mapper): InstantiatedSymbol {
     return {
       declarations: symbol.declarations,
@@ -173,6 +175,8 @@ export function check(module: Module) {
       typeType: symbol.typeType && instantiateType(symbol.typeType, mapper),
     }
   }
+
+  // 
   function inferTypeArguments(typeParameters: TypeVariable[], signature: Signature, argTypes: Type[]): Type[] {
     const inferences: Map<TypeVariable, Type[]> = new Map()
     for (const typeParameter of typeParameters) {
@@ -219,12 +223,18 @@ export function check(module: Module) {
       }
     }
   }
+  
+  // 
   function checkParameter(parameter: Parameter): Type {
     return parameter.typename ? checkType(parameter.typename) : anyType
   }
+
+  // 
   function checkTypeParameter(typeParameter: TypeParameter): Type {
     return getTypeTypeOfSymbol(typeParameter.symbol)
   }
+
+  // 
   function checkBody(body: Statement[], declaredType?: Type): Type {
     for (const statement of body) {
       checkStatement(statement)
@@ -243,6 +253,8 @@ export function check(module: Module) {
     // TODO: Union types, I guess
     return types[0]
   }
+
+  // 
   function forEachReturnStatement(body: Statement[], callback: (returnStatement: Return) => void): void {
       for (const statement of body) {
           traverse(statement)
@@ -261,6 +273,8 @@ export function check(module: Module) {
         }
       }
   }
+
+  // 
   function checkType(type: TypeNode): Type {
     switch (type.kind) {
       case SyntaxKind.Identifier:
@@ -284,6 +298,8 @@ export function check(module: Module) {
         return getTypeTypeOfSymbol(type.symbol)
     }
   }
+
+  // 
   function checkObjectLiteralType(object: ObjectLiteralType): ObjectType {
       const members: Table = new Map()
       for (const p of object.properties) {
@@ -297,12 +313,16 @@ export function check(module: Module) {
       }
       return object.symbol.typeType = { kind: Kind.Object, id: typeCount++, members }
   }
+
+  // 
   function checkPropertyDeclaration(property: PropertyDeclaration): Type {
     if (property.typename) {
       return checkType(property.typename)
     }
     return anyType
   }
+
+  // 
   function getValueTypeOfSymbol(symbol: Symbol): Type {
     if (!symbol.valueDeclaration) {
       throw new Error("Cannot get value type of symbol without value declaration")
@@ -332,6 +352,8 @@ export function check(module: Module) {
         throw new Error("Unxpected value declaration kind " + SyntaxKind[(symbol.valueDeclaration as Declaration).kind])
     }
   }
+
+  // 
   function getTypeOfFunction(func: Function): Type {
     for (const typeParameter of func.typeParameters || []) {
       checkTypeParameter(typeParameter)
@@ -348,6 +370,8 @@ export function check(module: Module) {
     }
     return func.symbol.valueType = { kind: Kind.Function, id: typeCount++, signature }
   }
+
+  // 
   function getTypeOfSignature(decl: SignatureDeclaration): Type {
     for (const typeParameter of decl.typeParameters || []) {
       checkTypeParameter(typeParameter)
@@ -362,6 +386,8 @@ export function check(module: Module) {
     }
     return decl.symbol.typeType = { kind: Kind.Function, id: typeCount++, signature }
   }
+
+  // 
   function getTypeTypeOfSymbol(symbol: Symbol): Type {
     if (symbol.typeType) 
       return symbol.typeType
@@ -382,6 +408,8 @@ export function check(module: Module) {
     }
     throw new Error(`Symbol has no type declarations`)
   }
+
+  // 
   function typeToString(type: Type): string {
     switch (type.kind) {
       case Kind.Primitive:
@@ -402,6 +430,8 @@ export function check(module: Module) {
         return type.name
     }
   }
+
+  // 
   function resolve(location: Node, name: string, meaning: Meaning) {
     while (location) {
       const table = (location.kind === SyntaxKind.Module || location.kind === SyntaxKind.Function || location.kind === SyntaxKind.Signature) ? location.locals
@@ -416,12 +446,16 @@ export function check(module: Module) {
       location = location.parent as Node
     }
   }
+
+  // 
   function getSymbol(locals: Table, name: string, meaning: Meaning) {
     const symbol = locals.get(name)
     if (symbol?.declarations.some(d => getMeaning(d) === meaning)) {
       return symbol
     }
   }
+
+  // 
   function isAssignableTo(source: Type, target: Type): boolean {
     if (source === target 
       || source === anyType || target === anyType 
