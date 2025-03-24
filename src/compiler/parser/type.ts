@@ -12,7 +12,7 @@ export enum SyntaxKind {
   ObjectLiteralType,     // オブジェクトリテラル型
   PropertyDeclaration,   // プロパティ宣言
   Function,              // 関数
-  Signature,             // シグネチャ
+  Signature,             // 関数シグネチャ
   Parameter,             // 引数（パラメータ）
   TypeParameter,         // 型パラメータ
   Return,                // 戻り値
@@ -30,14 +30,14 @@ export interface Location {
   pos: number  // 値・要素がソースコード内のどの位置にあるかを示す
 }
 
-// コードの式を表す型
-// プログラム内での演算や参照などを行う要素の型
-export type Expression = Identifier | NumericLiteral | StringLiteral | Assignment | Object | Function | Call
 // コードの文を表す型
 // プログラムの実行単位（アクションや宣言）を表す要素の型
 export type Statement = Var | TypeAlias | ExpressionStatement | Return
+// コードの式を表す型
+// プログラム内での演算や参照などを行う要素の型
+export type Expression = Identifier | NumericLiteral | StringLiteral | Assignment | Object | Function | Call
 // 型情報を表す値・要素の集合を表す型
-export type TypeNode = ObjectLiteralType | Identifier | SignatureDeclaration
+export type TypeNode = Identifier | ObjectLiteralType | SignatureDeclaration
 // プログラムでの宣言を表す型
 export type Declaration = Var | TypeAlias | ObjectLiteralType | Object | Parameter | TypeParameter | PropertyAssignment | PropertyDeclaration | Function | SignatureDeclaration
 export type DeclarationBase = {

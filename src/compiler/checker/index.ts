@@ -2,14 +2,22 @@ import { SyntaxKind, Meaning, Kind } from '../parser/type.js'
 import type { Node, Module, Statement, Type, Symbol, InstantiatedSymbol, Expression, Declaration, TypeNode, TypeParameter, Object, ObjectLiteralType, PropertyAssignment, PropertyDeclaration, ObjectType, Function, SignatureDeclaration, Parameter, Return, Call, Table, Signature, Mapper, TypeVariable } from '../parser/type.js'
 import { error } from '../error.js'
 import { getMeaning } from '../binder/index.js'
+
 let typeCount = 0
+
+// 文字列型
 const stringType: Type = { kind: Kind.Primitive, id: typeCount++ }
+// 数値型
 const numberType: Type = { kind: Kind.Primitive, id: typeCount++ }
+// エラー型
 const errorType: Type = { kind: Kind.Primitive, id: typeCount++ }
+// any型
 const anyType: Type = { kind: Kind.Primitive, id: typeCount++ }
+
 export function check(module: Module) {
   return module.statements.map(checkStatement)
 
+  // コードの文の型チェックを行う
   // プログラムの実行単位（アクションや宣言）を表す要素を引数に受け取り、型のチェックを行う関数
   function checkStatement(statement: Statement): Type {
     switch (statement.kind) {
@@ -35,9 +43,11 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // コードの式の型チェックを行う
+  // プログラム内での演算や参照などを行う要素を引数に受け取り、型のチェックを行う関数
   function checkExpression(expression: Expression): Type {
     switch (expression.kind) {
+      // 識別子の場合
       case SyntaxKind.Identifier:
         const symbol = resolve(expression, expression.text, Meaning.Value)
         if (symbol) {
@@ -45,20 +55,26 @@ export function check(module: Module) {
         }
         error(expression, "Could not resolve " + expression.text)
         return errorType
+      // 数値の場合
       case SyntaxKind.NumericLiteral:
         return numberType
+      // 文字列の場合
       case SyntaxKind.StringLiteral:
         return stringType
+      // オブジェクトの場合
       case SyntaxKind.Object:
         return checkObject(expression)
+      // 代入の場合
       case SyntaxKind.Assignment:
         const v = checkExpression(expression.value)
         const t = checkExpression(expression.name)
         if (!isAssignableTo(v, t))
           error(expression.name, `Cannot assign value of type '${typeToString(v)}' to variable of type '${typeToString(t)}'.`)
         return t
+      // 関数の場合
       case SyntaxKind.Function:
         return checkFunction(expression)
+      // 関数呼び出しの場合
       case SyntaxKind.Call:
         return checkCall(expression)
     }
@@ -274,9 +290,11 @@ export function check(module: Module) {
       }
   }
 
-  // 
+  // TypeNode（型情報を表す値・要素の集合を表す型）を引数に取り、正確にその値が持っている型を返す関数
+  // 型の定義としてまとめられていた要素から、それぞれの固有の型を取り出す関数
   function checkType(type: TypeNode): Type {
     switch (type.kind) {
+      // 識別子の場合
       case SyntaxKind.Identifier:
         switch (type.text) {
           case "string":
@@ -285,15 +303,16 @@ export function check(module: Module) {
             return numberType
           default:
             const symbol = resolve(type, type.text, Meaning.Type)
-            // TODO: Extract to getTypeTypeOfSymbol ?
             if (symbol) {
               return getTypeTypeOfSymbol(symbol)
             }
             error(type, "Could not resolve type " + type.text)
             return errorType
         }
+      // オブジェクトの場合
       case SyntaxKind.ObjectLiteralType:
         return checkObjectLiteralType(type)
+      // 関数の場合
       case SyntaxKind.Signature:
         return getTypeTypeOfSymbol(type.symbol)
     }
@@ -301,17 +320,17 @@ export function check(module: Module) {
 
   // 
   function checkObjectLiteralType(object: ObjectLiteralType): ObjectType {
-      const members: Table = new Map()
-      for (const p of object.properties) {
-          const symbol = resolve(p, p.name.text, Meaning.Value)
-          if (!symbol) {
-              // TODO: Throws on function return type (which is admittedly checked first)
-              throw new Error(`Binder did not correctly bind property ${p.name.text} of object literal type with keys ${Object.keys(object.symbol.members)}`)
-          }
-          members.set(p.name.text, symbol)
-          checkPropertyDeclaration(p)
+    const members: Table = new Map()
+    for (const p of object.properties) {
+      const symbol = resolve(p, p.name.text, Meaning.Value)
+      if (!symbol) {
+        // TODO: Throws on function return type (which is admittedly checked first)
+        throw new Error(`Binder did not correctly bind property ${p.name.text} of object literal type with keys ${Object.keys(object.symbol.members)}`)
       }
-      return object.symbol.typeType = { kind: Kind.Object, id: typeCount++, members }
+      members.set(p.name.text, symbol)
+      checkPropertyDeclaration(p)
+    }
+    return object.symbol.typeType = { kind: Kind.Object, id: typeCount++, members }
   }
 
   // 
