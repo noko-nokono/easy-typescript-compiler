@@ -80,7 +80,7 @@ export function check(module: Module) {
     }
   }
   
-  // 
+  // オブジェクトの型チェックを行う関数
   function checkObject(object: Object): ObjectType {
     const members: Table = new Map()
     for (const p of object.properties) {
@@ -91,16 +91,15 @@ export function check(module: Module) {
       members.set(p.name.text, symbol)
       checkProperty(p)
     }
-    // No caching here because Typescript doesn't cache object types either 
     return { kind: Kind.Object, id: typeCount++, members }
   }
   
-  // 
+  // オブジェクトのプロパティの値（initializer）を型チェックを行う関数
   function checkProperty(property: PropertyAssignment): Type {
     return checkExpression(property.initializer)
   }
   
-  // 
+  // 関数の型チェックを行う関数
   function checkFunction(func: Function): Type {
     return getValueTypeOfSymbol(func.symbol)
   }
@@ -341,18 +340,21 @@ export function check(module: Module) {
     return anyType
   }
 
-  // 
+  // 引数で受け取ったシンボルの値の型を取得する関数
   function getValueTypeOfSymbol(symbol: Symbol): Type {
+    // シンボルが値を持っているかどうかを確認
     if (!symbol.valueDeclaration) {
       throw new Error("Cannot get value type of symbol without value declaration")
     }
+    // すでに型が決まっている場合はその値をそのまま返す
     if (symbol.valueType) 
       return symbol.valueType
+    // シンボルが型エイリアスの場合は、エイリアスの型を取得
     if ('target' in symbol) {
       const alias = symbol as InstantiatedSymbol
       return instantiateType(getValueTypeOfSymbol(alias.target), alias.mapper)
     }
-    // TODO: symbol flags
+    // シンボルの値の型を取得
     switch (symbol.valueDeclaration.kind) {
       case SyntaxKind.Var:
       case SyntaxKind.TypeAlias:
