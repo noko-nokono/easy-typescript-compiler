@@ -104,41 +104,51 @@ export function check(module: Module) {
     return getValueTypeOfSymbol(func.symbol)
   }
 
-  // 
+  // 関数呼び出しの型チェックを行う関数
   function checkCall(call: Call): Type {
-    // TODO: after instantiation is done, check how Typescript does it.
+    // 呼び出しを行なった関数自体の型を取得
     const expressionType = checkExpression(call.expression)
+    // 呼び出しを行なった関数の型が関数でない場合はエラー
     if (expressionType.kind !== Kind.Function) {
       error(call.expression, `Cannot call expression of type '${typeToString(expressionType)}'.`)
       return errorType
     }
+    // 呼び出しを行なった関数の引数の型を取得
     const argTypes = call.arguments.map(checkExpression)
+    // ジェネリック関数の場合は、型引数を取得
     let sig = expressionType.signature
+    // 以下ジェネリック関数の場合のif文
     if (sig.typeParameters) {
       let typeArguments: Type[]
       const typeParameters = sig.typeParameters.map(getTypeTypeOfSymbol) as TypeVariable[]
+      // 関数の引数の型が指定されていない場合は、引数の型を推論
       if (!call.typeArguments) {
         typeArguments = inferTypeArguments(typeParameters, sig, argTypes)
       }
+      // 型引数の数が合わない場合はエラー
       else if (sig.typeParameters.length !== call.typeArguments.length) {
-        // TODO: check whether Typescript handles incorrect lengths this way (I think it ALWAYS does the fallback, and has the error-checking branch do less work)
         error(call.expression, `Expected ${sig.typeParameters.length} type arguments, but got ${call.typeArguments.length}.`)
         typeArguments = sig.typeParameters.map(_ => anyType)
       }
+      // 型の定義があれば、その型の解析を行う
       else {
         typeArguments = call.typeArguments.map(checkType)
       }
+      // ジェネリック型を具体的な型に置き換える
       sig = instantiateSignature(sig, { sources: typeParameters, targets: typeArguments })
     }
+    // 関数の期待する引数と、渡された引数の数を比較し、一致しなければエラー
     if (sig.parameters.length !== call.arguments.length) {
       error(call.expression, `Expected ${sig.parameters.length} arguments, but got ${call.arguments.length}.`)
     }
+    // 各引数の型が、関数呼び出しの引数の型と一致するかチェック
     for (let i = 0; i < Math.min(argTypes.length, sig.parameters.length); i++) {
       const parameterType = getValueTypeOfSymbol(sig.parameters[i])
       if (!isAssignableTo(argTypes[i], parameterType)) {
         error(call.arguments[i], `Expected argument of type '${typeToString(parameterType)}', but got '${typeToString(argTypes[i])}'.`)
       }
     }
+    // 関数の返り値の型
     return sig.returnType
   }
 
@@ -191,18 +201,20 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // 関数のジェネリクス型の型引数を推論する
   function inferTypeArguments(typeParameters: TypeVariable[], signature: Signature, argTypes: Type[]): Type[] {
+    // ジェネリック型パラメータ（typeParameters）ごとに型推論の候補リスト（inferences）を作成
     const inferences: Map<TypeVariable, Type[]> = new Map()
     for (const typeParameter of typeParameters) {
       inferences.set(typeParameter, [])
     }
     let i = 0
     for (const parameter of signature.parameters) {
+      // 関数の引数と宣言されたパラメータを比較し、型推論を実行
       inferType(argTypes[i], getValueTypeOfSymbol(parameter))
       i++
     }
-    // TODO: Check for dupes, decide whether to union, etc etc
+    // 最初に推論された型を各型パラメータに適用して返す
     return typeParameters.map(p => inferences.get(p)![0])
 
     function inferType(source: Type, target: Type): void {
@@ -408,21 +420,26 @@ export function check(module: Module) {
     return decl.symbol.typeType = { kind: Kind.Function, id: typeCount++, signature }
   }
 
-  // 
+  // 引数で受けたシンボルの値から、そのシンボルの型情報を取得する関数
   function getTypeTypeOfSymbol(symbol: Symbol): Type {
+    // すでに型が決まっている場合はその値をそのまま返す
     if (symbol.typeType) 
       return symbol.typeType
+    // シンボルが型エイリアスの場合は、エイリアスの型を取得
     if ('target' in symbol) {
       const alias = symbol as InstantiatedSymbol
       return instantiateType(getTypeTypeOfSymbol(alias.target), alias.mapper)
     }
-    // TODO: symbol flags
+    // シンボルに関連する宣言を順番に処理し、適切な型を取得 
     for (const d of symbol.declarations) {
       switch (d.kind) {
+        // 型エイリアス（type X = Y）の場合
         case SyntaxKind.TypeAlias:
           return checkType(d.typename)
+        // ジェネリック型パラメータ（T）の場合
         case SyntaxKind.TypeParameter:
           return symbol.typeType = { id: typeCount++, kind: Kind.TypeVariable, name: d.name.text }
+        // 関数のシグネチャ（(x: number) => string）の場合
         case SyntaxKind.Signature:
           return getTypeOfSignature(d)
       }
