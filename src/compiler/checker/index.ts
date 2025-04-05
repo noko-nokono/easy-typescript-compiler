@@ -14,6 +14,13 @@ const errorType: Type = { kind: Kind.Primitive, id: typeCount++ }
 // any型
 const anyType: Type = { kind: Kind.Primitive, id: typeCount++ }
 
+
+/**
+ * [全体像]
+ * 1. 
+ * [ポイント]
+ * check〇〇関数は、型のチェックを行う関数で、infer〇〇関数は、型の推論を行う関数
+ */
 export function check(module: Module) {
   return module.statements.map(checkStatement)
 
@@ -152,31 +159,34 @@ export function check(module: Module) {
     return sig.returnType
   }
 
-  // 
+  // ジェネリック関数の型を具体的な型（（例）T -> number)に置き換えるラッパー関数
   function instantiateSignature(signature: Signature, mapper: Mapper): Signature {
     return {
-      typeParameters: undefined, // TODO: Optionally retain type parameters
+      typeParameters: undefined,
       parameters: signature.parameters.map(p => instantiateSymbol(p, mapper)),
-      returnType: instantiateType(signature.returnType, mapper), // TODO: Lazily calculate return type (getReturnTypeOfSignature dispatches several kinds of calculation, and the kind we need here is simple)
+      returnType: instantiateType(signature.returnType, mapper),
       target: signature,
       mapper,
     }
   }
 
-  // 
+  // ジェネリック関数の型を具体的な型（（例）T -> number)に置き換える関数
   function instantiateType(type: Type, mapper: Mapper): Type {
-    // TODO: Caching??!
     switch (type.kind) {
+      // プリミティブ型（string, number...）の場合
       case Kind.Primitive:
         return type
+      // 関数型の場合
       case Kind.Function:
         return { kind: Kind.Function, id: typeCount++, signature: instantiateSignature(type.signature, mapper) }
+      // オブジェクト型の場合
       case Kind.Object:
         const members: Table = new Map()
         for (const [m, s] of type.members) {
           members.set(m, instantiateSymbol(s, mapper))
         }
         return { kind: Kind.Object, id: typeCount++, members }
+      // 型変数の場合
       case Kind.TypeVariable:
         for (let i = 0; i < mapper.sources.length; i++) {
           if (mapper.sources[i] === type) {
@@ -189,7 +199,7 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // Symbol型のジェネリック型を具体的な型に変換する関数
   function instantiateSymbol(symbol: Symbol, mapper: Mapper): InstantiatedSymbol {
     return {
       declarations: symbol.declarations,
@@ -217,33 +227,37 @@ export function check(module: Module) {
     // 最初に推論された型を各型パラメータに適用して返す
     return typeParameters.map(p => inferences.get(p)![0])
 
+    // 引数で受け取った型の情報を元に、型推論を行う関数
+    // 第二引数の型が、第一引数の型に代入可能かどうかを判別する
+    // 第一引数の型が、第二引数の型に代入可能な場合は、第一引数の型を第二引数の型に推論する
     function inferType(source: Type, target: Type): void {
       switch (target.kind) {
+        // プリミティブ型（string, number...）の場合
         case Kind.Primitive:
           return
+        // 関数型の場合
         case Kind.Function:
           if (source.kind === Kind.Function) {
-            // TODO: Maybe need instantiations?: Map<string, Signature> too? It's technically caching I think, and I'm not doing that yet
-            // TODO: Decide what to do if signature target/mapper are defined -- it should already have been instantiated.. maybe?
             const sourceSig = source.signature
             const targetSig = target.signature
             if (sourceSig.typeParameters && targetSig.typeParameters) {
-                inferFromSymbols(sourceSig.typeParameters, targetSig.typeParameters)
+              inferFromSymbols(sourceSig.typeParameters, targetSig.typeParameters)
             }
-            // TODO: We don't care about variance, but this would be the place to flip it
             inferFromSymbols(sourceSig.parameters, targetSig.parameters)
             inferType(sourceSig.returnType, targetSig.returnType)
           }
-          // recur if source is also a function
           return
+        // オブジェクト型の場合
         case Kind.Object:
-          // recur if source is also an object
           return
+        // 型変数の場合
         case Kind.TypeVariable:
           inferences.get(target)!.push(source)
           return
       }
     }
+
+    // 複数シンボルの型を比較し、型推論を行う関数
     function inferFromSymbols(sources: Symbol[], targets: Symbol[]): void {
       for (let i = 0; i < Math.min(sources.length, targets.length); i++) {
         if (targets[i]) inferType(getValueTypeOfSymbol(sources[i]), getValueTypeOfSymbol(targets[i]))
@@ -251,25 +265,25 @@ export function check(module: Module) {
     }
   }
   
-  // 
+  // 関数の引数の型チェックを行う関数
   function checkParameter(parameter: Parameter): Type {
     return parameter.typename ? checkType(parameter.typename) : anyType
   }
 
-  // 
+  // 関数の引数（ジェネリクス）の型チェックを行う関数
   function checkTypeParameter(typeParameter: TypeParameter): Type {
     return getTypeTypeOfSymbol(typeParameter.symbol)
   }
 
-  // 
+  // 関数本体（ブロック）内の解析を行い、その関数の戻り値の型を返す関数
   function checkBody(body: Statement[], declaredType?: Type): Type {
+    // 関数本体の文を順番に処理
     for (const statement of body) {
       checkStatement(statement)
     }
-    // now find all return statements and munge their types together
+    // 全てのreturn文を取得し、戻り値の型を取得
     const types: Type[] = []
     forEachReturnStatement(body, returnStatement => {
-      // TODO: Dedupe
       const returnType = checkStatement(returnStatement)
       if (declaredType && returnType !== declaredType) {
         if (!isAssignableTo(returnType, declaredType))
@@ -277,28 +291,28 @@ export function check(module: Module) {
       }
       types.push(returnType)
     })
-    // TODO: Union types, I guess
     return types[0]
   }
 
-  // 
+  // 関数内にあるreturn文を全て取得する関数
+  // 引数で受け取った関数の本体（body）を順番に処理し、return文を見つけたらコールバック関数を実行する
   function forEachReturnStatement(body: Statement[], callback: (returnStatement: Return) => void): void {
-      for (const statement of body) {
-          traverse(statement)
+    for (const statement of body) {
+        traverse(statement)
+    }
+    function traverse(node: Statement) {
+      switch (node.kind) {
+        case SyntaxKind.ExpressionStatement:
+        case SyntaxKind.Var:
+        case SyntaxKind.TypeAlias:
+          return
+        case SyntaxKind.Return:
+          return callback(node)
+        default:
+          const unused: never = node
+          console.log(`${unused} should *never* have been used`)
       }
-      function traverse(node: Statement) {
-        switch (node.kind) {
-          case SyntaxKind.ExpressionStatement:
-          case SyntaxKind.Var:
-          case SyntaxKind.TypeAlias:
-            return
-          case SyntaxKind.Return:
-            return callback(node)
-          default:
-            const unused: never = node
-            console.log(`${unused} should *never* have been used`)
-        }
-      }
+    }
   }
 
   // TypeNode（型情報を表す値・要素の集合を表す型）を引数に取り、正確にその値が持っている型を返す関数
@@ -329,13 +343,13 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // オブジェクトリテラルの型チェックを行う関数
   function checkObjectLiteralType(object: ObjectLiteralType): ObjectType {
     const members: Table = new Map()
+    // オブジェクトリテラルのプロパティを順番に処理
     for (const p of object.properties) {
       const symbol = resolve(p, p.name.text, Meaning.Value)
       if (!symbol) {
-        // TODO: Throws on function return type (which is admittedly checked first)
         throw new Error(`Binder did not correctly bind property ${p.name.text} of object literal type with keys ${Object.keys(object.symbol.members)}`)
       }
       members.set(p.name.text, symbol)
@@ -344,7 +358,7 @@ export function check(module: Module) {
     return object.symbol.typeType = { kind: Kind.Object, id: typeCount++, members }
   }
 
-  // 
+  // オブジェクトのプロパティの型チェックを行う関数
   function checkPropertyDeclaration(property: PropertyDeclaration): Type {
     if (property.typename) {
       return checkType(property.typename)
@@ -469,18 +483,22 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // 名前解決を行う関数
+  // 引数で受け取った名前を持つシンボルを、上のスコープに向かって順番に探していく
   function resolve(location: Node, name: string, meaning: Meaning) {
     while (location) {
+      // スコープ内に対応のシンボルテーブルがあるかどうかを確認
       const table = (location.kind === SyntaxKind.Module || location.kind === SyntaxKind.Function || location.kind === SyntaxKind.Signature) ? location.locals
         : (location.kind === SyntaxKind.Object || location.kind === SyntaxKind.ObjectLiteralType) ? location.symbol.members 
         : undefined
+      // シンボルテーブルがある場合は、名前を元にシンボルを取得
       if (table) {
         const symbol = getSymbol(table, name, meaning)
         if (symbol) {
           return symbol
         }
       }
+      // シンボルが見つからなかった場合、親のスコープを探す
       location = location.parent as Node
     }
   }
