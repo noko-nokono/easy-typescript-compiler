@@ -100,3 +100,8 @@ Scanner で生成された Token を AST（抽象構文木）に変換する役�
 ## ✅Transform
 
 ## ✅Emitter
+
+## 注意
+
+1. ChatGPT に説明してもらっている箇所なども含まれており、文章に統一感がないかもしれません
+2. mini-typescript（https://github.com/sandersn/mini-typescript）のリポジトリのコードをそのまま参照しています。一部未実装の箇所なども残っております。
