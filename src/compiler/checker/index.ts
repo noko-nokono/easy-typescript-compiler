@@ -315,8 +315,11 @@ export function check(module: Module) {
     }
   }
 
-  // TypeNode（型情報を表す値・要素の集合を表す型）を引数に取り、正確にその値が持っている型を返す関数
-  // 型の定義としてまとめられていた要素から、それぞれの固有の型を取り出す関数
+  // TypeNode（構文上の型表現）を受け取り、それが意味する実際の型（Type）を返す関数。
+  // ソースコード上に書かれた型注釈や型定義を、型システム内部で使うTypeオブジェクトに変換する。
+  // 例： "string" という型注釈があったら、それに対応する stringType を返す。
+  // { name: string, age: number } のような型定義なら、オブジェクト型を構築して返す。
+  // 型の検証を行うわけではない
   function checkType(type: TypeNode): Type {
     switch (type.kind) {
       // 識別子の場合
@@ -400,15 +403,19 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // 関数を解析して、その関数の型を取得する関数
   function getTypeOfFunction(func: Function): Type {
     for (const typeParameter of func.typeParameters || []) {
+      // 関数の引数（ジェネリクス型）の型チェック
       checkTypeParameter(typeParameter)
     }
     for (const parameter of func.parameters) {
+      // 関数の引数の型チェック
       checkParameter(parameter)
     }
+    // 関数の戻り値の型を取得
     const declaredType = func.typename && checkType(func.typename)
+    // 関数の本体の型チェック
     const bodyType = checkBody(func.body, declaredType)
     const signature = {
       typeParameters: func.typeParameters?.map(p => p.symbol),
@@ -418,7 +425,8 @@ export function check(module: Module) {
     return func.symbol.valueType = { kind: Kind.Function, id: typeCount++, signature }
   }
 
-  // 
+  // 関数の型定義を解析して、その関数の型を取得する関数
+  // type Fn = (x: number) => string のような関数の定義本体を持たない型定義を解析する
   function getTypeOfSignature(decl: SignatureDeclaration): Type {
     for (const typeParameter of decl.typeParameters || []) {
       checkTypeParameter(typeParameter)
@@ -461,9 +469,11 @@ export function check(module: Module) {
     throw new Error(`Symbol has no type declarations`)
   }
 
-  // 
+  // 型定義を文字列に変換する関数
+  // 型エラーが発生した際のエラー内容を表示するために、型の情報を文字列に変換する
   function typeToString(type: Type): string {
     switch (type.kind) {
+      // プリミティブ型（string, number...）の場合
       case Kind.Primitive:
         switch (type.id) {
           case stringType.id: return 'string'
@@ -472,12 +482,15 @@ export function check(module: Module) {
           case anyType.id: return 'any'
           default: throw new Error("Unknown primitive type with id " + type.id)
         }
+      // オブジェクト型の場合
       case Kind.Object:
         const propertiesToString = ([name,symbol]: [string, Symbol]) => `${name}: ${typeToString(getValueTypeOfSymbol(symbol))}`
         return `{ ${Array.from(type.members).map(propertiesToString).join(', ')} }`
+      // 関数型の場合
       case Kind.Function:
         const parametersToString = (p: Symbol) => `${(p.valueDeclaration as Parameter).name.text}: ${typeToString(getValueTypeOfSymbol(p))}`
         return `(${type.signature.parameters.map(parametersToString).join(', ')}) => ${typeToString(type.signature.returnType)}`
+      // 型変数の場合
       case Kind.TypeVariable:
         return type.name
     }
@@ -503,7 +516,7 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // 指定された名前と種類（値・型）に一致するシンボルを、指定されたスコープ内から探す関数
   function getSymbol(locals: Table, name: string, meaning: Meaning) {
     const symbol = locals.get(name)
     if (symbol?.declarations.some(d => getMeaning(d) === meaning)) {
@@ -511,14 +524,19 @@ export function check(module: Module) {
     }
   }
 
-  // 
+  // 値(第一引数のsource)が定義された型(第二引数のtarget)に代入可能かどうかを判定する関数
+  // 型の互換性を確認するために、型の種類やメンバーの型を比較する
+  // booleanの値を返し、代入可能でなければ呼び出し元でエラーを出力する
   function isAssignableTo(source: Type, target: Type): boolean {
+    // 型の種類が同じか、any型またはerror型の場合はtrueを返す
     if (source === target 
       || source === anyType || target === anyType 
       || source === errorType || target === errorType)
       return true
+    // プリミティブ型の場合は、型の種類が同じかどうかを比較
     else if (source.kind === Kind.Primitive || target.kind === Kind.Primitive)
       return source === target
+    // オブジェクト型の場合は、オブジェクトのプロパティの型を比較
     else if (source.kind === Kind.Object && target.kind === Kind.Object) {
       for (const [key, targetSymbol] of target.members) {
         const sourceSymbol = source.members.get(key)
@@ -528,6 +546,7 @@ export function check(module: Module) {
       }
       return true
     }
+    // 関数型の場合は、関数の引数の型と戻り値の型を比較
     else if (source.kind === Kind.Function && target.kind === Kind.Function) {
       let targetSignature = target.signature
       if (source.signature.typeParameters) {
@@ -539,6 +558,7 @@ export function check(module: Module) {
           targetSignature = instantiateSignature(target.signature, mapper)
         }
       }
+      // 関数の戻り値の型・引数の数・各引数の型を比較
       return isAssignableTo(source.signature.returnType, targetSignature.returnType)
         && source.signature.parameters.length <= targetSignature.parameters.length
         && source.signature.parameters.every((p, i) => 
