@@ -1,5 +1,11 @@
 [WIP] TypeScript Compiler
 
+# 前提
+
+このリポジトリのコードは、以下の mini-typescript のコードを参照しております。
+
+https://github.com/sandersn/mini-typescript
+
 # 🛤️ 全体像
 
 ## 📚 用語
