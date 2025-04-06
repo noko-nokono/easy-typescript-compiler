@@ -21,7 +21,7 @@ const anyType: Type = { kind: Kind.Primitive, id: typeCount++ }
  * [ポイント]
  * check〇〇関数は、型のチェックを行う関数で、infer〇〇関数は、型の推論を行う関数
  */
-export function check(module: Module) {
+export function checker(module: Module) {
   return module.statements.map(checkStatement)
 
   // コードの文の型チェックを行う
