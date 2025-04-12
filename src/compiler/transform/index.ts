@@ -2,8 +2,11 @@ import { Statement, Expression, SyntaxKind, PropertyAssignment, Parameter } from
 
 /**
  * [全体像]
- * 1. transform関数でプログラム全体の変換を開始する
- * 
+ * 1. transform 関数で JavaScript 相当の文へ変換する処理を開始する
+ * 2. モジュール内の各文に対して transformStatement を呼び出し、構文の種類に応じて不要な型情報（typename）を除去した上で文を変換する
+ * 3. 各文に含まれる式（Expression）は transformExpression によって再帰的に処理され、内部の型情報や型注釈も削除される
+ * 4. 関数の引数やオブジェクトのプロパティなどの入れ子になった要素も、transformParameter や transformProperty を通じて順次変換される
+ * 5. 型定義文（TypeAlias）は出力対象に含めず、JavaScript に不要な型の構造をすべて除去することで、純粋な JavaScript の構文木を生成する
  */
 export function transform(statements: Statement[]) {
   return typescript(statements)

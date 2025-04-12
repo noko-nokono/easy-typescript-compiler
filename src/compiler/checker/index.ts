@@ -17,9 +17,11 @@ const anyType: Type = { kind: Kind.Primitive, id: typeCount++ }
 
 /**
  * [全体像]
- * 1. 
- * [ポイント]
- * check〇〇関数は、型のチェックを行う関数で、infer〇〇関数は、型の推論を行う関数
+ * 1. checker関数でプログラム全体の型チェックを開始する
+ * 2. モジュール内のすべての文（statement）に対して、checkStatement を呼び出し型検査を行う
+ * 3. 各文に含まれる式や型については、checkExpression や checkType を通じて再帰的に型を検査する
+ * 4. 関数呼び出しやジェネリクスに対しては、型引数の推論（inferTypeArguments）と具体化（instantiateType）を行い、型の整合性を検証する
+ * 5. オブジェクト、関数、戻り値などの構造型も含めて、プログラム内の各要素の型を解析し、不一致があればエラーを報告する
  */
 export function checker(module: Module) {
   return module.statements.map(checkStatement)

@@ -8,20 +8,11 @@ export const typeDeclarations = new Set([SyntaxKind.TypeAlias])
 
 /**
  * [全体像]
- * 1. bind関数でプログラム全体の解析を開始する
- * 2. bindStatementでプログラムの各文を解析する（var, type, return, expression（式））
- *    - var: 変数宣言の解析
- *    - type: 型定義の解析
- *    - return: return文の解析
- *    - expression: 式文の解析
- * 3. bindExpressionでプログラムの各式を解析する（object, function, assignment, call, identifier, string, number）
- *    - object: オブジェクトの解析
- *    - function: 関数の解析
- *    - assignment: 代入の解析
- *    - call: 関数呼び出しの解析
- *    - identifier: 識別子の解析
- *    - string: 文字列の解析
- *    - number: 数値の解析
+ * 1. binder関数でプログラム全体の解析を開始する
+ * 2. モジュール内のすべての文（statement）に対して、親子関係の構築とシンボルの登録（bindStatement）を行う
+ * 3. 各文の中で出現する式や型に対しても再帰的に処理（bindExpression / bindType）を行い、必要に応じてシンボルテーブルへ登録（declareSymbol）する
+ * 4. すべてのノードに対して、親ノードとの関係（setParents）を記録することで、後続の解析やエラー報告を助ける構造にする
+ * 5. 同じ名前での重複宣言や、値・型の意味の不一致などをチェックする（declareSymbol）
  */
 export function binder(m: Module) {
   setParents(m, m.statements)
@@ -106,9 +97,9 @@ export function binder(m: Module) {
       case SyntaxKind.Identifier:
       case SyntaxKind.StringLiteral:
       case SyntaxKind.NumericLiteral:
-          break
+        break
       default:
-          throw new Error(`Unexpected expression kind ${SyntaxKind[(expr as Expression).kind]}`)
+        throw new Error(`Unexpected expression kind ${SyntaxKind[(expr as Expression).kind]}`)
     }
   }
 

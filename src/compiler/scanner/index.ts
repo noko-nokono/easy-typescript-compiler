@@ -7,6 +7,14 @@ const keywords = {
   "return": Token.Return,
 }
 
+/**
+ * [全体像]
+ * 1. scanner関数で文字列コードの字句解析（トークン化）処理を開始する
+ * 2. scan関数を呼び出すたびに、現在の position から次のトークンを判別し、種類（token）と内容（text）を記録する
+ * 3. 空白・文字列・数値・識別子・記号などに応じて、それぞれの条件分岐と補助関数（scanForward など）を用いて位置を進め、適切なトークンを設定する
+ * 4. 識別子については予約語（keywords）との一致も確認し、適切なトークン種別を判別する
+ * 5. position(), text(), token() により現在のスキャン結果を外部から安全に取得できるようにする
+ */
 export const scanner = (code: string): Scanner => {
   // コードのどの位置を解析しているかを判別する値
   let position = 0;

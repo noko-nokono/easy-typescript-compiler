@@ -2,8 +2,11 @@ import { Statement, SyntaxKind, Expression, PropertyAssignment, Parameter, TypeN
 
 /**
  * [全体像]
- * 1. emitter関数でプログラム全体の変換を開始する
- * 
+ * 1. emitter関数で各文を文字列に変換して JavaScript/TypeScript のコードを生成する処理を開始する
+ * 2. 各文は emitStatement によって構文の種類に応じた文字列へと変換され、式文・変数宣言・return 文・型定義などが適切な構文で出力される
+ * 3. 各文に含まれる式（Expression）は emitExpression を通じて再帰的に文字列化され、関数・オブジェクト・代入式・関数呼び出しなどがそれぞれ対応した形式で出力される
+ * 4. 型（TypeNode）については emitType により識別子型や関数型などを文字列に変換し、型注釈のある文や引数などで用いられる
+ * 5. 最終的にすべての文をセミコロンと改行で区切って連結することで、ファイルに出力可能なソースコード文字列を完成させる
  */
 export function emitter(statements: Statement[]) {
   // 各文（Statement）にセミコロン「;」と改行「\n」でつなげてコードとしての出力を生成

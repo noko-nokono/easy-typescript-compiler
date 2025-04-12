@@ -5,16 +5,11 @@ import { error } from '../error.js'
 
 /**
  * [全体像]
- * 1. parseModuleでプログラム全体の解析を開始する
- * 2. parseStatementでプログラムの各文を解析する（var, type, return）
- *    - var: 変数宣言を解析する
- *    - type: 型宣言を解析する
- *    - return: return文を解析する
- * 3. parseExpressionでプログラムの式を解析する（object, function, etc...）
- *    - オブジェクトリテラル ({ key: value }) を解析する
- *    - 関数定義 (function name(...) { ... }) を解析する
- *    - 識別子（変数名など）や リテラル（数値や文字列）を解析する
- *    - 代入式 (x = 10) を解析する
+ * 1. parser関数でプログラム全体の構文解析を開始する
+ * 2. ソースコードは文（statement）単位で parseTerminated によって解析され、各文に応じたASTノードが構築される
+ * 3. 文ごとの構文解析では、変数宣言、return文、型定義、式文などに応じて parseStatement が適切なノードを生成する
+ * 4. 式解析は parseExpression や parseExpressionBelowCall により、リテラル、関数呼び出し、オブジェクト、代入式などを判別してノード化する
+ * 5. ASTノードは pos や parent を保持し、トークン処理には parseExpected や tryParseToken などの補助関数が使われることで、エラー処理と木構造の整合性が保たれる
  */
 export const parser = (scanner: Scanner): Module => {
   // 解析を開始する
