@@ -28,19 +28,19 @@ export const scanner = (code) => {
         if (position === code.length) {
             token = Token.EOF;
         }
-        // 現在解析している位置が、ダブルオーテーションかどうかを判別
-        // ダブルオーテーションで囲まれた値を文字列として判定
+        // 現在解析している位置が、ダブルクォーテーションかどうかを判別
+        // ダブルクォーテーションで囲まれた値を文字列として判定
         else if (code.charAt(position) === '"') {
             position++;
             scanForward(isDoubleQuotation);
-            // ダブルくオーテーションが閉じられているかを判別
+            // ダブルクォーテーションが閉じられているかを判別
             if (code.charAt(position) !== '"') {
                 throw new Error("unclosed string literal");
             }
             else {
                 position++;
             }
-            // ダブルオーテーションで囲まれた文字列を取得
+            // ダブルクォーテーションで囲まれた文字列を取得
             text = code.slice(start, position);
             token = Token.StringLiteral;
         }
@@ -119,7 +119,7 @@ export const scanner = (code) => {
 const isIgnorableCharacter = (charactor) => {
     return /[ \t\b\n]/.test(charactor);
 };
-// 現在解析している位置が、ダブルオーテーションかどうかを判別する関数
+// 現在解析している位置が、ダブルクォーテーションかどうかを判別する関数
 const isDoubleQuotation = (charactor) => {
     return /[^\"]/.test(charactor);
 };
