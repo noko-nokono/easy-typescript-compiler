@@ -1,16 +1,12 @@
 [WIP] TypeScript Compiler
 
-# 前提
-
-このリポジトリのコードは、以下の mini-typescript のコードを参照しております。
-
-https://github.com/sandersn/mini-typescript
+このリポジトリのコードは [mini-typescript](https://github.com/sandersn/mini-typescript) のコードを参照しております。
 
 # 🛤️ 全体像
 
 ## 📚 用語
 
-**🏷️ 文**
+**🏷️ 文（Statement）**
 
 プログラムの実行単位（アクションや宣言）であり、単独で意味を持つコードになります。
 
@@ -24,7 +20,7 @@ https://github.com/sandersn/mini-typescript
 | return 文  | return x;             | 関数から値を返す   |
 | ブロック文 | { let y = 5; }        | 複数の文をまとめる |
 
-**🏷️ 式**
+**🏷️ 式（Expression）**
 
 プログラム内の演算や参照であり、単独ではプログラムの流れを制御しないコードになります。
 
@@ -88,26 +84,29 @@ function add(x: number, y: number): number {
 
 ## ✅Scanner
 
-TypeScript のソースコードを Token に分解する役割。
-値の種類、値、解析を行なっている位置の情報を後続処理に提供します。
-
-Token … コンパイルする上で必要な最小単位の基礎となるデータを生成する役割
+![scanner](./images/scanner.jpg)
 
 ## ✅Parser
 
-Scanner で生成された Token を AST（抽象構文木）に変換する役割を持っています。
+![parser](./images/parser.jpg)
 
 ## ✅Binder
 
-ソースコードのスコープ情報の整理や、シンボルの解決（変数宣言と参照の紐付け）を行い、後続の名前解決や型チェックなどの処理をスムーズに行うための基盤を提供する。
+![binder](./images/binder.jpg)
 
 ## ✅Checker
 
+![checker](./images/checker.jpg)
+
 ## ✅Transform
 
+![transform](./images/transform.jpg)
+
 ## ✅Emitter
+
+![emitter](./images/emitter.jpg)
 
 ## 注意
 
 1. ChatGPT に説明してもらっている箇所なども含まれており、文章に統一感がないかもしれません
-2. mini-typescript（https://github.com/sandersn/mini-typescript）のリポジトリのコードをそのまま参照しています。一部未実装の箇所なども残っております。
+2. このリポジトリのコードは全て [mini-typescript](https://github.com/sandersn/mini-typescript) のリポジトリのコードを参照しています。ライセンス周りの不備などを見つけた方は、ご連絡をいただけますと幸いです。
