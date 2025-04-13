@@ -2,9 +2,7 @@
 
 このリポジトリのコードは [mini-typescript](https://github.com/sandersn/mini-typescript) のコードを参照しております。
 
-# 🛤️ 全体像
-
-## 📚 用語
+# 📚 用語
 
 **🏷️ 文（Statement）**
 
@@ -81,6 +79,8 @@ function add(x: number, y: number): number {
 ```
 
 この例では、`add` 関数のシグネチャは `(x: number, y: number) => number` となります。
+
+# 🛤️ 全体像
 
 ## ✅Scanner
 
