@@ -1,8 +1,10 @@
-[WIP] TypeScript Compiler
+# 🫡 大事
 
-このリポジトリのコードは [mini-typescript](https://github.com/sandersn/mini-typescript) のコードを参照しております。
+このリポジトリのコードは、以下 mini-typescript のコードを参照しております。
 
-# 📚 用語
+https://github.com/sandersn/mini-typescript
+
+# 📚 コード内の用語
 
 **🏷️ 文（Statement）**
 

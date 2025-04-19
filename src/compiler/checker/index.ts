@@ -14,7 +14,6 @@ const errorType: Type = { kind: Kind.Primitive, id: typeCount++ }
 // any型
 const anyType: Type = { kind: Kind.Primitive, id: typeCount++ }
 
-
 /**
  * [全体像]
  * 1. checker関数でプログラム全体の型チェックを開始する
